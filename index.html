@@ -3,18 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f6f3ec">
 <title>Pago - Machu Picchu Terra</title>
-<style>
-  body{font-family:system-ui,sans-serif;background:#f4f1ea;margin:0;padding:24px;color:#222}
-  .card{max-width:420px;margin:0 auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 2px 12px #0002}
-  h1{font-size:1.3rem;margin-top:0}
-  label{display:block;margin-top:12px;font-size:.9rem}
-  input{width:100%;padding:10px;margin-top:4px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px}
-  button,a.btn{display:block;width:100%;margin-top:20px;padding:12px;background:#0a7d4f;color:#fff;border:0;border-radius:6px;font-size:1rem;text-align:center;text-decoration:none;cursor:pointer;box-sizing:border-box}
-  .aviso{background:#fff3cd;padding:8px;border-radius:6px;font-size:.8rem;margin-bottom:8px}
-  .codigo{font-size:1.6rem;font-weight:bold;text-align:center;margin:16px 0;letter-spacing:2px}
-  .error{color:#b00020;margin-top:12px}
-</style>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="card">
@@ -37,37 +29,6 @@
     <a class="btn" id="volver" href="#">Volver al chat</a>
   </div>
 </div>
-<script>
-const WEBHOOK = "https://smith-mt.app.n8n.cloud/webhook/pago-terra";
-const TOKEN = "mpt-7f3a9c21e84b";
-const BOT = "TerraAssistant24_bot";
-const q = new URLSearchParams(location.search);
-if (q.get("tour")) document.getElementById("tour").value = q.get("tour");
-if (q.get("monto")) document.getElementById("monto").value = q.get("monto");
-document.getElementById("pagar").onclick = async () => {
-  const g = id => document.getElementById(id).value.trim();
-  const err = document.getElementById("error");
-  err.textContent = "";
-  if (!g("nombre") || !g("apellidos") || !g("fecha")) { err.textContent = "Completa nombre, apellidos y fecha de viaje."; return; }
-  const btn = document.getElementById("pagar");
-  btn.disabled = true; btn.textContent = "Procesando...";
-  try {
-    const r = await fetch(WEBHOOK, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: TOKEN, nombre: g("nombre"), apellidos: g("apellidos"), fecha_viaje: g("fecha"), tour: g("tour"), monto: g("monto") })
-    });
-    const d = await r.json();
-    if (!d.ok) throw new Error("rechazado");
-    document.getElementById("form").style.display = "none";
-    document.getElementById("ok").style.display = "block";
-    document.getElementById("codigo").textContent = d.codigo;
-    document.getElementById("volver").href = "https://t.me/" + BOT + "?start=" + encodeURIComponent(d.codigo);
-  } catch (e) {
-    err.textContent = "No se pudo registrar el pago. Intenta de nuevo.";
-    btn.disabled = false; btn.textContent = "Pagar";
-  }
-};
-</script>
+<script src="script.js" defer></script>
 </body>
 </html>
