@@ -30,15 +30,75 @@ document.getElementById("pagar").onclick = async () => {
         monto: g("monto")
       })
     });
-    const d = await r.json();
-    if (!d.ok) throw new Error("rechazado");
+    if (!r.ok) throw new Error("http");
+    const d = await r.json().catch(() => null);
+    if (!d || !d.ok) throw new Error("rechazado");
+    const codigo = (typeof d.codigo === "string" || typeof d.codigo === "number")
+      ? String(d.codigo).trim()
+      : "";
+    if (!codigo) {
+      const e = new Error("sin-codigo");
+      e.sinCodigo = true;
+      throw e;
+    }
     document.getElementById("form").style.display = "none";
     document.getElementById("ok").style.display = "block";
-    document.getElementById("codigo").textContent = d.codigo;
-    document.getElementById("volver").href = "https://t.me/" + BOT + "?start=" + encodeURIComponent(d.codigo);
+    document.getElementById("codigo").textContent = codigo;
+    document.getElementById("volver").href = "https://t.me/" + BOT + "?start=" + encodeURIComponent(codigo);
+    resetCopiar();
+    document.getElementById("copiar").focus();
   } catch (e) {
-    err.textContent = "No se pudo registrar el pago. Intenta de nuevo.";
+    err.textContent = e && e.sinCodigo
+      ? "El servidor no devolvió un código de pago. Intenta de nuevo."
+      : "No se pudo registrar el pago. Intenta de nuevo.";
     btn.disabled = false;
     btn.textContent = "Pagar";
   }
+};
+
+const copiarBtn = document.getElementById("copiar");
+const copiarEstado = document.getElementById("copiar-estado");
+let copiarTimer;
+
+function resetCopiar() {
+  clearTimeout(copiarTimer);
+  copiarBtn.textContent = "Copiar código";
+  copiarEstado.textContent = "";
+}
+
+async function copiarTexto(texto) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(texto);
+  }
+  const ta = document.createElement("textarea");
+  ta.value = texto;
+  ta.readOnly = true;
+  ta.style.position = "fixed";
+  ta.style.top = "-1000px";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  const ok = document.execCommand("copy");
+  ta.remove();
+  if (!ok) throw new Error("copy");
+}
+
+copiarBtn.onclick = async () => {
+  const codigo = document.getElementById("codigo").textContent;
+  if (!codigo) return;
+  try {
+    await copiarTexto(codigo);
+    copiarBtn.textContent = "¡Código copiado!";
+    copiarEstado.textContent = "Código copiado al portapapeles.";
+  } catch (e) {
+    copiarBtn.textContent = "No se pudo copiar";
+    copiarEstado.textContent = "No se pudo copiar. Selecciona el código y cópialo manualmente.";
+    const r = document.createRange();
+    r.selectNodeContents(document.getElementById("codigo"));
+    const s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
+  }
+  clearTimeout(copiarTimer);
+  copiarTimer = setTimeout(resetCopiar, 2500);
 };

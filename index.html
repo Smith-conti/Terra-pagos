@@ -24,7 +24,9 @@
   <div id="ok" style="display:none">
     <h1>Pago registrado</h1>
     <p>Tu código de pago es:</p>
-    <div class="codigo" id="codigo"></div>
+    <div class="codigo" id="codigo" aria-label="Código de pago"></div>
+    <button type="button" class="btn-copiar" id="copiar">Copiar código</button>
+    <span class="sr-only" role="status" id="copiar-estado"></span>
     <p>Vuelve al chat para agendar tu briefing. Si el chat no recibe el código, escríbelo tú.</p>
     <a class="btn" id="volver" href="#">Volver al chat</a>
   </div>
